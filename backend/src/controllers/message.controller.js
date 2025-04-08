@@ -49,7 +49,6 @@ const sendMessage = async (req, res) => {
     
     try {
         const {text, image} = req.body;
-        console.log(text);
         
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
