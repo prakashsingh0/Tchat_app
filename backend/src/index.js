@@ -5,6 +5,8 @@ import cors from 'cors';
 import path from 'path';
 import authRoutes from './routes/auth.route.js';
 import messageRoutes from './routes/message.route.js';
+
+import aiRoutes from './routes/ai.route.js'
 import { connectDB } from './lib/db.js';
 import { app, server } from './lib/socket.js';
 
@@ -22,6 +24,7 @@ app.use(cors({
 
 app.use("/api/auth", authRoutes);
 app.use("/api/auth/messages", messageRoutes);
+app.use("/api/auth/",aiRoutes);
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../frontend/dist")));

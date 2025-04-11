@@ -10,8 +10,10 @@ import { useAuthStore } from './store/useAuthStore'
 import { Loader } from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
 import { useThemeStore } from './store/useThemeStore'
+import DraggableFloatingButton from './components/DraggableFloatingButton'
 
 function App() {
+  const icon = '/message.svg'
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
   const { theme } = useThemeStore();
 
@@ -30,6 +32,7 @@ function App() {
   return (
     <div data-theme={theme}>
       <Navbar />
+      <DraggableFloatingButton icon={icon}/>
       <Routes>
         <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login" />} />
         <Route path='/signup' element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
