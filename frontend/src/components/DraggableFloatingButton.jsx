@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import ChatContainer from "./ChatContainer";
 import AiChat from "./AiChat";
 
 const DraggableFloatingButton = ({ icon = "+", onClick }) => {
@@ -11,7 +10,6 @@ const DraggableFloatingButton = ({ icon = "+", onClick }) => {
     const updatePosition = () => {
       const padding = 30;
       const buttonHeight = buttonRef.current?.offsetHeight || 56;
-
       setPosition({
         x: padding,
         y: window.innerHeight - buttonHeight - padding,
@@ -23,26 +21,46 @@ const DraggableFloatingButton = ({ icon = "+", onClick }) => {
     return () => window.removeEventListener("resize", updatePosition);
   }, []);
 
-  const handleDrag = (e) => {
-    const newX = e.clientX - buttonRef.current.offsetWidth / 2;
-    const newY = e.clientY - buttonRef.current.offsetHeight / 2;
+  const handleDrag = (x, y) => {
+    const newX = x - (buttonRef.current?.offsetWidth || 56) / 2;
+    const newY = y - (buttonRef.current?.offsetHeight || 56) / 2;
     setPosition({ x: newX, y: newY });
   };
 
   const handleMouseDown = () => {
-    window.addEventListener("mousemove", handleDrag);
+    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
   };
 
+  const handleMouseMove = (e) => {
+    handleDrag(e.clientX, e.clientY);
+  };
+
   const handleMouseUp = () => {
-    window.removeEventListener("mousemove", handleDrag);
+    window.removeEventListener("mousemove", handleMouseMove);
     window.removeEventListener("mouseup", handleMouseUp);
   };
 
-  // Determine chat position based on screen regions
+  const handleTouchStart = () => {
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length > 0) {
+      const touch = e.touches[0];
+      handleDrag(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    window.removeEventListener("touchmove", handleTouchMove);
+    window.removeEventListener("touchend", handleTouchEnd);
+  };
+
   const getChatPosition = () => {
-    const chatWidth = 270; // approx width of chat box
-    const chatHeight = 300; // approx height of chat box
+    const chatWidth = 270;
+    const chatHeight = 300;
     const padding = 10;
 
     const isLeft = position.x < window.innerWidth / 2;
@@ -67,6 +85,7 @@ const DraggableFloatingButton = ({ icon = "+", onClick }) => {
         ref={buttonRef}
         onClick={() => setAiChatOpen(!aiChatOpen)}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
         className="fixed bg-blue-600 hover:bg-blue-700 rounded-full p-4 shadow-lg cursor-grab active:cursor-grabbing z-50"
         style={{ left: position.x, top: position.y }}
       >
