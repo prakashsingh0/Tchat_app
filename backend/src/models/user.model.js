@@ -28,6 +28,31 @@ const userSchema = new mongoose.Schema(
             type: Array,
             default: []
         },
+        post:[
+            { 
+                image: {
+                    type: String,
+                    require: true
+                },
+                description: {
+                    type: String,
+                    require: true
+                },
+                likes: {
+                    type: Array,
+                    default: []
+                },
+                userDetails: {
+                    type: Array,
+                    default: []
+                },
+                comments: [
+                    {
+                        commnet: { type: String },
+                        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+                    }
+                ],}
+        ],
     },
     { timestamps: true }
 )

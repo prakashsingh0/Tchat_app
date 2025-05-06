@@ -8,50 +8,69 @@ import Post from '../models/post.model.js'
 const Posts = async (req, res) => {
     try {
         const { image, title } = req.body;
-        let imageUrl;
-        const userId = req.user._id;
+        const userId = req.user?._id;
+
         if (!userId) {
-            return res.status.json({ message: "user not Logged In" })
+            return res.status(401).json({ message: "User not logged in" });
         }
+
+        const userInDb = await User.findById(userId);
+        if (!userInDb) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        let imageUrl = null;
+
         if (image) {
-            // upload base54 image to cloudinary
+            // upload base64 image to cloudinary
             const uploadResponse = await cloudinary.uploader.upload(image);
             imageUrl = uploadResponse.secure_url;
         }
 
         const newPost = new Post({
-            title,
+            userName: userInDb.fullName,
+            userPic: userInDb.profilePic,
+            description: title,
             image: imageUrl,
             userId: userId
-        })
+        });
+
         await newPost.save();
-        return res.status(200).json({ message: "post updated Successfully" });
+
+        return res.status(200).json({ message: "Post created successfully" });
 
     } catch (error) {
-        console.log("Error in post controller", error);
-
-        return res.status(500).json({ message: "Internal server errror" })
+        console.error("Error in post controller:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
 
 
 
 // getAllPost 
 const getAllpost = async (req, res) => {
     try {
-        const id = req.user._id;
-        const loggedInUser = await User.findById(id);
-        const loggedInUserpostts = await Post.find({ userId: id })
-        const followingUserPost = await Promise.all(loggedInUser.following.map((otherUserId) => {
-            return Post.find({ userId: otherUserId })
-        }))
-        return res.status(200).json({
-            posts: loggedInUserpostts.concat(...followingUserPost)
-        })
+        const userId = req.user?._id;
+        if (!userId) {
+            return res.status(401).json({ message: "User not logged in" });
+        }
+
+        const loggedInUser = await User.findById(userId);
+        if (!loggedInUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Get all posts in the database
+        const allPosts = await Post.find({}).sort({ createdAt: -1 }); // Optional: sorted by newest first
+
+        return res.status(200).json({ posts: allPosts });
+
     } catch (error) {
-        console.log(error);
+        console.error("Error fetching all posts:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
 //getFollowingPost
 const getFollowingPost = async (req, res) => {
     try {

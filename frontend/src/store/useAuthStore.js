@@ -53,7 +53,7 @@ export const useAuthStore = create((set, get) => ({
             toast.success(`Welcome ${res?.data?.fullName}`)
             get().connectSocket();
         } catch (error) {
-            toast.error(error?.response?.data);
+            toast.error(error?.response?.data?.message);
         } finally {
             set({ isLoggingIng: false });
         }

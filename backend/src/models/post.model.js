@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
+    userName:{
+        type:String,
+        require:true
+    },
+    userPic:{type:String,
+        require:true
+    },
     image: {
         type: String,
         require: true
@@ -13,10 +20,7 @@ const postSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    userDetails: {
-        type: Array,
-        default: []
-    },
+
     comments: [
         {
             commnet: { type: String },
