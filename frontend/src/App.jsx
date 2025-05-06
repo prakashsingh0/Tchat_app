@@ -11,6 +11,7 @@ import { Loader } from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
 import { useThemeStore } from './store/useThemeStore'
 import DraggableFloatingButton from './components/DraggableFloatingButton'
+import AddPost from './components/AddPost'
 
 function App() {
   const icon = '/message.svg'
@@ -38,6 +39,7 @@ function App() {
         <Route path='/signup' element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
         <Route path='/login' element={!authUser ? <LogInPage /> : <Navigate to="/" />} />
         <Route path='/setting' element={<SettingPage />} />
+        <Route path='/upload' element={ <AddPost /> } />
         <Route path='/profile' element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
       </Routes>
 

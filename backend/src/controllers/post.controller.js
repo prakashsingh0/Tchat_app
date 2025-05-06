@@ -1,15 +1,22 @@
 import cloudinary from "../lib/cloudinary.js"
-
+// import upload from "../lib/multer.js";
 import User from "../models/user.model.js"
 import Post from '../models/post.model.js'
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 const Posts = async (req, res) => {
     try {
-        const { image, title } = req.body;
+        const { title } = req.body;
+        // console.log(req.file.path);
+        
         const userId = req.user?._id;
-
+        
         if (!userId) {
             return res.status(401).json({ message: "User not logged in" });
         }
@@ -21,12 +28,16 @@ const Posts = async (req, res) => {
 
         let imageUrl = null;
 
-        if (image) {
-            // upload base64 image to cloudinary
-            const uploadResponse = await cloudinary.uploader.upload(image);
+        if (req.file && req.file.path) {
+            const uploadResponse = await cloudinary.uploader.upload(req.file.path, {
+                upload_preset: "unsigned_profile_upload",
+                folder: "post",
+            });
             imageUrl = uploadResponse.secure_url;
-        }
 
+            // Optional: remove file from local storage after upload
+            fs.unlinkSync(req.file.path);
+        }
         const newPost = new Post({
             userName: userInDb.fullName,
             userPic: userInDb.profilePic,
