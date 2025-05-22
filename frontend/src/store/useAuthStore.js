@@ -4,17 +4,18 @@ import toast from "react-hot-toast"
 
 import { io } from "socket.io-client";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:8000" : "/" ;
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:8000" : "/";
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
     isSigningUp: false,
     isLoggingIng: false,
     isUpdatingProfile: false,
-
+    userProfile: false,
     isCheckingAuth: true,
     onlineUsers: [],
     socket: null,
+
     checkAuth: async () => {
         try {
             const res = await axiosInstance.get('/auth/check')
@@ -82,6 +83,16 @@ export const useAuthStore = create((set, get) => ({
             set({ isUpdatingProfile: false })
         }
     },
+    findUserProfile: async(data)=>{
+        try {
+            const res = await axiosInstance.get(`/auth/user/${data}`);
+        set({userProfile:res.data})
+        } catch (error) {
+            toast.error(error.response?.data?.message)
+        }
+        
+    }
+    ,
 
     connectSocket: () => {
         const { authUser } = get()

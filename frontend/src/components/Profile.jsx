@@ -1,45 +1,55 @@
-import { CircleX, Heart, MessageCircle } from 'lucide-react';
-import React, { useEffect } from 'react';
-import { usePostStore } from '../store/usePostStore';
-import PostSkeletons from './skeletons/PostSkeletons';
+import React from 'react';
 import { useAuthStore } from '../store/useAuthStore';
-import { useNavigate } from 'react-router-dom';
+import Post from './Post';
+import { Heart, MessageCircle } from 'lucide-react';
+import PostSkeletons from './skeletons/PostSkeletons';
 
-const Post = () => {
-    const { authUser, findUserProfile } = useAuthStore();
-    const { allPosts, getAllPosts, likeOrDislike, deletePost } = usePostStore();
-    const navigate = useNavigate();
-   
-    useEffect(() => {
-        getAllPosts();
-    }, [getAllPosts]);
+const Profile = () => {
+  const {authUser, userProfile } = useAuthStore();
 
-    const handleLike = (index) => {
-        likeOrDislike(index);
-    };
+  const user = userProfile?.user;
+  const posts = userProfile?.posts;
+  console.log(posts);
+  
 
-    const handleDelete = (index) => {
-        if (window.confirm('Are you sure you want to delete this post?')) {
-            deletePost(index);
-        }
-    };
-    const goToProfile = (id) => {
-        console.log("userId=>", id);
-
-        findUserProfile(id)
-        navigate(`/profile/${id}`);
-    }
-    const isLoading = !allPosts || allPosts.length === 0;
-
+  if (!user) {
     return (
-        <div className="flex flex-col gap-5 mx-auto overflow-y-auto scrollbar-none">
+      <div className="h-screen pt-20 flex items-center justify-center">
+        <p className="text-lg text-gray-500">Loading profile...</p>
+      </div>
+    );
+  }
+const isLoading = !posts || posts.length === 0;
+  return (
+    <div className="h-screen pt-20">
+      <div className="max-w-2xl mx-auto p-4">
+        <div className="bg-base-content/20 rounded-xl p-6 space-y-8 z-50">
+          <div className='flex'>
+            <div className="flex gap-4 items-center ">
+              <img src={user.profilePic} alt="Profile" className="h-16 w-16 rounded-full" />
+              <div className='flex flex-col gap-2 md:flex-row md:items-center md:justify-between '>
+                <div className="font-semibold text-lg">{user.fullName}</div>
+                {/* Example: Followers count */}
+                <div>
+                  <div className="text-sm text-gray-500">{user.followers?.length} followers</div>
+                  <div className="text-sm text-gray-500 ms-auto">{user.following?.length} following</div>
+                </div>
+              </div>
+            </div>
+            <div className='ms-auto'>
+              <button className='border -1 px-4 py-1 rounded-lg'>Follow</button>
+            </div>
+          </div>
+<hr />
+          {/* post for selected user */}
+           <div className="flex flex-col gap-5 mx-auto overflow-y-auto scrollbar-none">
             {isLoading ? (
                 <PostSkeletons />
             ) : (
-                allPosts.map((post, index) => (
+                posts.map((post, index) => (
                     <div className="flex flex-col m-2 p-2 border rounded-2xl" key={index}>
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => goToProfile(post.userId)}>
+                            <div className="flex items-center gap-3 cursor-pointer">
                                 <img
                                     src={post.userPic || '/tChat.jpg'}
                                     className="h-16 w-16 rounded-full"
@@ -87,7 +97,11 @@ const Post = () => {
                 ))
             )}
         </div>
-    );
+        </div>
+        
+      </div>
+    </div>
+  );
 };
 
-export default Post;
+export default Profile;

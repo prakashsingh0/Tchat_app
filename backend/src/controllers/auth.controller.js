@@ -1,6 +1,7 @@
 import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
+import Post from '../models/post.model.js'
 import bcrypt from 'bcryptjs'
 
 const signup = async (req, res) => {
@@ -69,7 +70,7 @@ const login = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" })
 
     }
-    
+
 }
 const logout = async (req, res) => {
     try {
@@ -83,31 +84,58 @@ const logout = async (req, res) => {
 }
 const updateProfile = async (req, res) => {
     try {
-      const { profilePic } = req.body;
-      const userId = req.user._id;
-  
-      if (!profilePic) {
-        return res.status(400).json({ message: "Profile pic is required" });
-      }
-  
-      const uploadResponse = await cloudinary.uploader.upload(profilePic, {
-        upload_preset: "unsigned_profile_upload", // your unsigned preset name
-        folder: "profilePics",
-      });
-  
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { profilePic: uploadResponse.secure_url },
-        { new: true }
-      );
-  
-      return res.status(200).json(updatedUser);
+        const { profilePic } = req.body;
+        const userId = req.user._id;
+
+        if (!profilePic) {
+            return res.status(400).json({ message: "Profile pic is required" });
+        }
+
+        const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+            upload_preset: "unsigned_profile_upload", // your unsigned preset name
+            folder: "profilePics",
+        });
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { profilePic: uploadResponse.secure_url },
+            { new: true }
+        );
+
+        return res.status(200).json(updatedUser);
     } catch (error) {
-      console.error("Error in update profile:", error.message);
-      return res.status(500).json({ message: "Internal server error" });
+        console.error("Error in update profile:", error.message);
+        return res.status(500).json({ message: "Internal server error" });
     }
-  };
-  
+};
+
+const findUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        // console.log(userId);
+
+        if (!userId) {
+            return res.status(400).json({ message: "someting went wrong" })
+        }
+        const UserProfile = await User.findById(userId).select("-password")
+        const post = await Post.find({ userId }).populate("userId","_id description");
+
+        if (!UserProfile) {
+            return res.status(400).json({ message: "User not found" })
+        }
+        console.log(UserProfile,post);
+
+        return res.status(200).json({
+            user:UserProfile,
+            posts:post
+        })
+
+    } catch (error) {
+        console.error("Error in findUserById controller", error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
 
 const checkAuth = async (req, res) => {
 
@@ -121,4 +149,4 @@ const checkAuth = async (req, res) => {
 
 }
 
-export { signup, login, logout, updateProfile, checkAuth };
+export { signup, login, logout, updateProfile, checkAuth, findUserById };
