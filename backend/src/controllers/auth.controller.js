@@ -123,7 +123,7 @@ const findUserById = async (req, res) => {
         if (!UserProfile) {
             return res.status(400).json({ message: "User not found" })
         }
-        console.log(UserProfile,post);
+        // console.log(UserProfile,post);
 
         return res.status(200).json({
             user:UserProfile,

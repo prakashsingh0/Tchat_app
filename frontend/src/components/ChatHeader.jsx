@@ -1,16 +1,23 @@
 import { X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
-
+import {useNavigate} from "react-router-dom"
 const ChatHeader = () => {
+  const navigate = useNavigate()
   const { selectedUser, setSelectedUser } = useChatStore();
   
   
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers,findUserProfile } = useAuthStore();
 
+   const goToProfile = (id) => {
+        console.log("userId=>", id);
+
+        findUserProfile(id,navigate)
+        
+    }
   return (
     <div className="p-2.5 border-b border-base-300">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between cursor-pointer" onClick={()=>goToProfile(selectedUser?._id)}>
         <div className="flex items-center gap-3">
           {/* Avatar */}
           <div className="avatar">

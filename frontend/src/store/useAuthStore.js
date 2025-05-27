@@ -83,15 +83,15 @@ export const useAuthStore = create((set, get) => ({
             set({ isUpdatingProfile: false })
         }
     },
-    findUserProfile: async(data)=>{
-        try {
-            const res = await axiosInstance.get(`/auth/user/${data}`);
-        set({userProfile:res.data})
-        } catch (error) {
-            toast.error(error.response?.data?.message)
-        }
-        
-    }
+    findUserProfile: async (id, navigate) => {
+  try {
+    const res = await axiosInstance.get(`/auth/user/${id}`);
+    set({ userProfile: res.data });
+    navigate(`/profile/${id}`); // Navigate after setting profile
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Error fetching profile');
+  }
+}
     ,
 
     connectSocket: () => {

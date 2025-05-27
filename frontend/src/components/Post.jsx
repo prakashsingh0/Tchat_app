@@ -26,8 +26,8 @@ const Post = () => {
     const goToProfile = (id) => {
         console.log("userId=>", id);
 
-        findUserProfile(id)
-        navigate(`/profile/${id}`);
+        findUserProfile(id,navigate)
+        
     }
     const isLoading = !allPosts || allPosts.length === 0;
 
