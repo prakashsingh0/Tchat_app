@@ -8,7 +8,7 @@ export const usePostStore = create((set, get) => {
         myPost: [],
         followingPost: [],
 
-        // ✅ Fetch all posts (from all users)
+        //  Fetch all posts (from all users)
         getAllPosts: async () => {
             try {
                 const res = await axiosInstance.get('auth/post/getallpost');
@@ -18,7 +18,7 @@ export const usePostStore = create((set, get) => {
             }
         },
 
-        // ✅ Create a new post (image + title) then refresh posts
+        //  Create a new post (image + title) then refresh posts
         createPost: async (data) => {
             try {
                 const res = await axiosInstance.post('auth/post', data); // expects { image, title }
@@ -29,7 +29,7 @@ export const usePostStore = create((set, get) => {
             }
         },
 
-        // ✅ Fetch posts of the logged-in user
+        //  Fetch posts of the logged-in user
         fetchMyPosts: async () => {
             try {
                 const res = await axiosInstance.get('auth/post/mypost');
@@ -39,8 +39,8 @@ export const usePostStore = create((set, get) => {
             }
         },
 
-        // ✅ Like or Dislike a post
-        likeOrDislike: async ( postIndex) => {
+        //  Like or Dislike a post
+        likeOrDislike: async (postIndex) => {
             try {
                 await axiosInstance.post(`auth/post/likeordislike/${postIndex}`);
                 await get().getAllPosts();
@@ -49,7 +49,7 @@ export const usePostStore = create((set, get) => {
             }
         },
 
-        // ✅ Delete a post of the current user
+        //  Delete a post of the current user
         deletePost: async (postIndex) => {
             try {
                 await axiosInstance.delete(`auth/post/deletepost/${postIndex}`);
@@ -60,7 +60,7 @@ export const usePostStore = create((set, get) => {
             }
         },
 
-        // ✅ Get posts from people the user is following
+        //  Get posts from people the user is following
         getFollowingPosts: async () => {
             try {
                 const res = await axiosInstance.get('auth/post/getfollowingpost');
@@ -70,7 +70,7 @@ export const usePostStore = create((set, get) => {
             }
         },
 
-        // ✅ Add comment to a post
+        //  Add comment to a post
         addComment: async (userIdOfPostOwner, postIndex, comment) => {
             try {
                 await axiosInstance.post(`auth/post/comment/${userIdOfPostOwner}/${postIndex}`, {
@@ -87,5 +87,9 @@ export const usePostStore = create((set, get) => {
     // Auto-fetch all posts on store initialization
     store.getAllPosts();
 
+    
+    setInterval(() => {
+        store.getAllPosts();
+    }, 30 * 60 * 1000);
     return store;
 });
