@@ -1,10 +1,11 @@
 import cloudinary from "../lib/cloudinary.js"
-// import upload from "../lib/multer.js";
+import { removeLocalFile } from "../lib/multer.js";
 import User from "../models/user.model.js"
 import Post from '../models/post.model.js'
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { log } from "console";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,10 +14,8 @@ const __dirname = path.dirname(__filename);
 const Posts = async (req, res) => {
     try {
         const { title } = req.body;
-        // console.log(req.file.path);
-        
         const userId = req.user?._id;
-        
+
         if (!userId) {
             return res.status(401).json({ message: "User not logged in" });
         }
@@ -26,33 +25,63 @@ const Posts = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        let imageUrl = null;
+        let fileUrl = null;
+        let fileType = null;
 
         if (req.file && req.file.path) {
+            // Detect file type
+            if (req.file.mimetype.startsWith("image/")) {
+                fileType = "image";
+            } else if (req.file.mimetype.startsWith("video/")) {
+                fileType = "video";
+            } else if (req.file.mimetype.startsWith("audio/")) {
+                fileType = "audio";
+            }
+
+            // Upload to Cloudinary
             const uploadResponse = await cloudinary.uploader.upload(req.file.path, {
-                upload_preset: "unsigned_profile_upload",
+                resource_type: fileType === "image" ? "image" : "video",
+                // 🔹 Cloudinary treats audio also under "video"
                 folder: "post",
             });
-            imageUrl = uploadResponse.secure_url;
 
-            // Optional: remove file from local storage after upload
-            fs.unlinkSync(req.file.path);
+            fileUrl = uploadResponse.secure_url;
+
+            // ✅ Remove local file after upload
+            removeLocalFile(req.file.path);
         }
+
         const newPost = new Post({
             userName: userInDb.fullName,
             userPic: userInDb.profilePic,
             description: title,
-            image: imageUrl,
-            userId: userId
+            file: fileUrl,       // unified field
+            fileType: fileType,  // track type for frontend rendering
+            userId: userId,
         });
 
         await newPost.save();
 
-        return res.status(200).json({ message: "Post created successfully" });
+        // console.log(newPost);
+
+        return res.status(200).json({ message: "Post created successfully", post: newPost });
+        console.log();
 
     } catch (error) {
         console.error("Error in post controller:", error);
+
+        // ✅ Cleanup if error occurs
+        if (req.file && req.file.path) {
+            removeLocalFile(req.file.path);
+        }
+
         return res.status(500).json({ message: "Internal server error" });
+    }
+    finally {
+        // Any final cleanup if needed
+        if (req.file && req.file.path) {
+            removeLocalFile(req.file.path);
+        }
     }
 };
 

@@ -8,7 +8,11 @@ const postSchema = new mongoose.Schema({
     userPic:{type:String,
         require:true
     },
-    image: {
+     file: {
+        type: String,
+        require: true
+    },
+    fileType: {
         type: String,
         require: true
     },

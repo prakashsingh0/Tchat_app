@@ -7,7 +7,8 @@ import upload from '../lib/multer.js';
 
 const router = express.Router();
 
-router.post("/", protectRoute,upload.single("image"),Posts);
+router.post("/", protectRoute, upload.single("file"), Posts);
+
 router.get("/mypost",protectRoute,MyPost);
 router.post("/likeordislike/:id",protectRoute,likeOrDislike);
 router.get("/getfollowingpost",protectRoute,getFollowingPost);
