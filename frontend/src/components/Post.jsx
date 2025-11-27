@@ -1,4 +1,4 @@
-import { CircleX, Heart, MessageCircle } from 'lucide-react';
+import { CircleX, Heart, MessageCircle, FileText } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { usePostStore } from '../store/usePostStore';
 import PostSkeletons from './skeletons/PostSkeletons';
@@ -63,8 +63,10 @@ const Post = () => {
                             )}
                         </div>
 
-                        {/* Media Content (Image, Video, Audio) */}
+                        {/* Media Content (Image, Video, Audio, PDF, Word) */}
                         <div className="mt-3">
+
+                            {/* IMAGE */}
                             {post.file && post.fileType === 'image' && (
                                 <img
                                     src={post.file}
@@ -73,28 +75,48 @@ const Post = () => {
                                 />
                             )}
 
+                            {/* VIDEO */}
                             {post.file && post.fileType === 'video' && (
-                                <video
-                                    controls
-                                    className="w-full h-80 object-cover rounded-lg"
-                                >
+                                <video controls className="w-full h-80 object-cover rounded-lg">
                                     <source src={post.file} type="video/mp4" />
-                                    Your browser does not support the video tag.
                                 </video>
                             )}
 
+                            {/* AUDIO */}
                             {post.file && post.fileType === 'audio' && (
-                                <audio
-                                    controls
-                                    className="w-full mt-2"
-                                >
+                                <audio controls className="w-full mt-2">
                                     <source src={post.file} type="audio/mpeg" />
-                                    Your browser does not support the audio tag.
                                 </audio>
+                            )}
+
+                            {/* PDF */}
+                            {post.file && post.fileType === 'pdf' && (
+                                <a
+                                    href={post.file}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-4 border rounded-lg bg-white shadow"
+                                >
+                                    <FileText className="text-red-600" />
+                                    <span className="font-medium">View PDF File</span>
+                                </a>
+                            )}
+
+                            {/* WORD DOCUMENT */}
+                            {post.file && post.fileType === 'word' && (
+                                <a
+                                    href={post.file}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-4 border rounded-lg bg-white shadow"
+                                >
+                                    <FileText className="text-blue-600" />
+                                    <span className="font-medium">View Word Document</span>
+                                </a>
                             )}
                         </div>
 
-                        {/* Actions (Like + Comment) */}
+                        {/* Actions */}
                         <div className="flex justify-between items-center mt-3">
                             <div className="flex items-center gap-2">
                                 <Heart
