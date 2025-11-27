@@ -27,27 +27,47 @@ const Posts = async (req, res) => {
 
         let fileUrl = null;
         let fileType = null;
+        let resourceType = "auto"; // Cloudinary auto mode
 
         if (req.file && req.file.path) {
+
+            const mime = req.file.mimetype;
+
             // Detect file type
-            if (req.file.mimetype.startsWith("image/")) {
+            if (mime.startsWith("image/")) {
                 fileType = "image";
-            } else if (req.file.mimetype.startsWith("video/")) {
+                resourceType = "image";      // Cloudinary setting
+            } 
+            else if (mime.startsWith("video/")) {
                 fileType = "video";
-            } else if (req.file.mimetype.startsWith("audio/")) {
+                resourceType = "video";      // Cloudinary treats video + audio as video
+            }
+            else if (mime.startsWith("audio/")) {
                 fileType = "audio";
+                resourceType = "video";      // Cloudinary requires "video" for audio
+            }
+            else if (
+                mime === "application/pdf" ||
+                mime === "application/msword" ||
+                mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+                mime === "application/zip"
+            ) {
+                fileType = "document";
+                resourceType = "raw";         // ⚠️ Cloudinary required for PDF, DOC, DOCX
+            }
+            else {
+                return res.status(400).json({ message: "Unsupported file type" });
             }
 
             // Upload to Cloudinary
             const uploadResponse = await cloudinary.uploader.upload(req.file.path, {
-                resource_type: fileType === "image" ? "image" : "video",
-                // 🔹 Cloudinary treats audio also under "video"
+                resource_type: resourceType,
                 folder: "post",
             });
 
             fileUrl = uploadResponse.secure_url;
 
-            // ✅ Remove local file after upload
+            // Remove file from local storage
             removeLocalFile(req.file.path);
         }
 
@@ -55,35 +75,26 @@ const Posts = async (req, res) => {
             userName: userInDb.fullName,
             userPic: userInDb.profilePic,
             description: title,
-            file: fileUrl,       // unified field
-            fileType: fileType,  // track type for frontend rendering
+            file: fileUrl,
+            fileType: fileType,  // image, video, audio, document
             userId: userId,
         });
 
         await newPost.save();
 
-        // console.log(newPost);
-
         return res.status(200).json({ message: "Post created successfully", post: newPost });
-        console.log();
 
     } catch (error) {
         console.error("Error in post controller:", error);
 
-        // ✅ Cleanup if error occurs
         if (req.file && req.file.path) {
             removeLocalFile(req.file.path);
         }
 
         return res.status(500).json({ message: "Internal server error" });
     }
-    finally {
-        // Any final cleanup if needed
-        if (req.file && req.file.path) {
-            removeLocalFile(req.file.path);
-        }
-    }
 };
+
 
 
 
