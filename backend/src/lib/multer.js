@@ -1,6 +1,6 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 // Fix for __dirname in ES Modules
@@ -10,39 +10,50 @@ const __dirname = path.dirname(__filename);
 // Define upload directory
 const uploadDir = path.join(__dirname, '../uploads');
 
-// Ensure the uploads directory exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Ensure uploads directory exists
+await fs.mkdir(uploadDir, { recursive: true });
 
-// Define storage for the files
+// ✅ Allowed file types
+const FILE_TYPES = {
+  'image/jpeg': '.jpeg',
+  'image/jpg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'video/mp4': '.mp4',
+  'video/x-matroska': '.mkv',
+  'video/avi': '.avi',
+  'video/quicktime': '.mov',
+  'audio/mpeg': '.mp3',
+  'audio/mp3': '.mp3',
+  'audio/wav': '.wav',
+  'audio/m4a': '.m4a',
+  'audio/ogg': '.ogg',
+  'application/pdf': '.pdf',
+  'application/msword': '.doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+};
+
+// Multer storage config
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = FILE_TYPES[file.mimetype] || path.extname(file.originalname);
+    cb(null, `${file.fieldname}-${Date.now()}${ext}`);
   },
-  filename: function (req, file, cb) {
-    // Create unique filename
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
-  }
 });
 
-// ✅ Allowed file types (extensions + mimetypes)
-const allowedExt = /jpeg|jpg|png|webp|mp4|mkv|avi|mov|mp3|wav|m4a|ogg|pdf|doc|docx/;
-
-const allowedMime = /image\/jpeg|image\/jpg|image\/png|image\/webp|video\/mp4|video\/x-matroska|video\/avi|video\/quicktime|audio\/mpeg|audio\/mp3|audio\/wav|audio\/m4a|audio\/ogg|application\/pdf|application\/msword|application\/vnd.openxmlformats-officedocument.wordprocessingml.document/;
-
-
+// File filter
 const fileFilter = (req, file, cb) => {
-  const extname = allowedExt.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedMime.test(file.mimetype.toLowerCase());
-
-  if (mimetype && extname) {
+  if (FILE_TYPES[file.mimetype]) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type! Got mimetype: ${file.mimetype}, ext: ${path.extname(file.originalname)}`));
+    cb(
+      new Error(
+        `Invalid file type! Got mimetype: ${file.mimetype}, ext: ${path
+          .extname(file.originalname)
+          .toLowerCase()}`
+      )
+    );
   }
 };
 
@@ -50,20 +61,16 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: {
-    fileSize: 300 * 1024 * 1024 // 300 MB max
-  }
+  limits: { fileSize: 300 * 1024 * 1024 }, // 300 MB
 });
 
-// ✅ Utility to safely delete local file after upload (avoid storage bloat)
-export const removeLocalFile = (filePath) => {
+// Async utility to safely delete files
+export const removeLocalFile = async (filePath) => {
   try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`🗑 Deleted temp file: ${filePath}`);
-    }
+    await fs.unlink(filePath);
+    console.log(`🗑 Deleted file: ${filePath}`);
   } catch (err) {
-    console.error('Failed to delete temp file:', err);
+    if (err.code !== 'ENOENT') console.error('Failed to delete file:', err);
   }
 };
 
