@@ -36,7 +36,10 @@ const Post = () => {
                 <PostSkeletons />
             ) : (
                 allPosts.map((post) => (
-                    <div className="flex flex-col m-2 p-2 border rounded-2xl" key={post._id}>
+                    <div
+                        className="flex flex-col m-2 p-2 border rounded-2xl"
+                        key={post._id}
+                    >
                         {/* User Info */}
                         <div className="flex justify-between items-center">
                             <div
@@ -49,12 +52,15 @@ const Post = () => {
                                     alt={post.userName || 'User'}
                                 />
                                 <div>
-                                    <div className="font-semibold">{post.userName}</div>
+                                    <div className="font-semibold">
+                                        {post.userName}
+                                    </div>
                                     <div className="text-sm text-gray-500">
                                         {post.description || 'No description'}
                                     </div>
                                 </div>
                             </div>
+
                             {authUser._id === post.userId && (
                                 <CircleX
                                     className="cursor-pointer text-red-600"
@@ -63,7 +69,7 @@ const Post = () => {
                             )}
                         </div>
 
-                        {/* Media Content (Image, Video, Audio, PDF, Word) */}
+                        {/* Media Content */}
                         <div className="mt-3">
 
                             {/* IMAGE */}
@@ -77,7 +83,10 @@ const Post = () => {
 
                             {/* VIDEO */}
                             {post.file && post.fileType === 'video' && (
-                                <video controls className="w-full h-80 object-cover rounded-lg">
+                                <video
+                                    controls
+                                    className="w-full h-80 object-cover rounded-lg"
+                                >
                                     <source src={post.file} type="video/mp4" />
                                 </video>
                             )}
@@ -89,29 +98,26 @@ const Post = () => {
                                 </audio>
                             )}
 
-                            {/* PDF */}
-                            {post.file && post.fileType === 'pdf' && (
+                            {/* DOCUMENTS (PDF / Word) */}
+                            {post.file && post.fileType === 'document' && (
                                 <a
                                     href={post.file}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-3 p-4 border rounded-lg bg-white shadow"
                                 >
-                                    <FileText className="text-red-600" />
-                                    <span className="font-medium">View PDF File</span>
-                                </a>
-                            )}
+                                    <FileText className="text-gray-700" />
 
-                            {/* WORD DOCUMENT */}
-                            {post.file && post.fileType === 'word' && (
-                                <a
-                                    href={post.file}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 p-4 border rounded-lg bg-white shadow"
-                                >
-                                    <FileText className="text-blue-600" />
-                                    <span className="font-medium">View Word Document</span>
+                                    {/* Detect PDF or Word by extension */}
+                                    {post.file.toLowerCase().endsWith(".pdf") ? (
+                                        <span className="font-medium">
+                                            View PDF File
+                                        </span>
+                                    ) : (
+                                        <span className="font-medium">
+                                            View Word Document
+                                        </span>
+                                    )}
                                 </a>
                             )}
                         </div>
@@ -129,6 +135,7 @@ const Post = () => {
                                 />
                                 <span>{post.likes.length}</span>
                             </div>
+
                             <MessageCircle className="cursor-pointer" />
                         </div>
                     </div>
