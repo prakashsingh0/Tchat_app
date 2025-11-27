@@ -18,6 +18,12 @@ const AddPost = () => {
         if (file.type.startsWith('image/')) return 'image';
         if (file.type.startsWith('video/')) return 'video';
         if (file.type.startsWith('audio/')) return 'audio';
+        if (file.type === 'application/pdf') return 'pdf';
+        if (
+            file.type === 'application/msword' ||
+            file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+            return 'word';
         return 'other';
     };
 
@@ -31,14 +37,12 @@ const AddPost = () => {
         if (!title || !selectedFile) {
             return toast.error('Please add a title and select a file');
         }
-        console.log(selectedFile);
 
         setIsUploading(true);
 
-        // Create a FormData object to send the file and the title
         const formData = new FormData();
         formData.append('title', title);
-        formData.append('file', selectedFile); // ✅ unified field for backend
+        formData.append('file', selectedFile); // unified backend field
 
         await createPost(formData);
 
@@ -56,6 +60,7 @@ const AddPost = () => {
                 <div className="bg-base-200 rounded-lg shadow-cl w-full max-w-6xl h-[calc(100vh-8rem)]">
                     <div className="flex h-full rounded-lg overflow-hidden">
                         <div className="flex flex-col items-center gap-4 p-4 w-full">
+
                             {/* Title */}
                             <input
                                 type="text"
@@ -81,46 +86,61 @@ const AddPost = () => {
                                         className="max-h-80 max-w-md rounded-lg border"
                                     >
                                         <source src={URL.createObjectURL(selectedFile)} />
-                                        Your browser does not support the video tag.
                                     </video>
                                 )}
 
                                 {selectedFile && fileType === 'audio' && (
-                                    <audio
-                                        controls
-                                        className="w-full max-w-md mt-2"
-                                    >
+                                    <audio controls className="w-full max-w-md mt-2">
                                         <source src={URL.createObjectURL(selectedFile)} />
-                                        Your browser does not support the audio tag.
                                     </audio>
+                                )}
+
+                                {selectedFile && fileType === 'pdf' && (
+                                    <div className="p-4 border rounded-lg bg-white shadow-md text-center">
+                                        <p className="font-semibold">PDF Selected:</p>
+                                        <p>{selectedFile.name}</p>
+                                    </div>
+                                )}
+
+                                {selectedFile && fileType === 'word' && (
+                                    <div className="p-4 border rounded-lg bg-white shadow-md text-center">
+                                        <p className="font-semibold">Word File Selected:</p>
+                                        <p>{selectedFile.name}</p>
+                                    </div>
                                 )}
 
                                 {/* File Input */}
                                 <label
                                     htmlFor="file-upload"
-                                    className={`absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${isUploading ? 'animate-pulse pointer-events-none' : ''
-                                        }`}
+                                    className={`absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${
+                                        isUploading ? 'animate-pulse pointer-events-none' : ''
+                                    }`}
                                 >
                                     <Camera className="size-5 text-base-200" />
                                     <input
                                         type="file"
                                         id="file-upload"
                                         className="hidden"
-                                        accept="image/*,video/*,audio/*" // ✅ support all
+                                        accept="
+                                            image/*,
+                                            video/*,
+                                            audio/*,
+                                            application/pdf,
+                                            application/msword,
+                                            application/vnd.openxmlformats-officedocument.wordprocessingml.document
+                                        "
                                         onChange={handleFileUpload}
                                         disabled={isUploading}
                                     />
                                 </label>
                             </div>
 
-                            {/* Info */}
                             <p className="text-sm text-zinc-400">
                                 {isUploading
                                     ? 'Uploading post...'
-                                    : 'Click the camera icon to upload image, video, or audio'}
+                                    : 'Upload image, video, audio, PDF, or Word file'}
                             </p>
 
-                            {/* Submit Button */}
                             <button
                                 className="btn btn-primary mt-2"
                                 onClick={handleSubmit}
