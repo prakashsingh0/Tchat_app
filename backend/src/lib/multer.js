@@ -30,8 +30,14 @@ const storage = multer.diskStorage({
 });
 
 // ✅ Allowed file types (extensions + mimetypes)
-const allowedExt = /jpeg|jpg|png|webp|mp4|mkv|avi|mov|mp3|wav|m4a|ogg/;
-const allowedMime = /image\/jpeg|image\/jpg|image\/png|image\/webp|video\/mp4|video\/x-matroska|video\/avi|video\/quicktime|audio\/mpeg|audio\/mp3|audio\/wav|audio\/m4a|audio\/ogg/;
+const allowedExt = /jpeg|jpg|png|webp|mp4|mkv|avi|mov|mp3|wav|m4a|ogg|pdf|doc|docx/;
+
+const allowedMime = /image\/jpeg|image\/jpg|image\/png|image\/webp|
+video\/mp4|video\/x-matroska|video\/avi|video\/quicktime|
+audio\/mpeg|audio\/mp3|audio\/wav|audio\/m4a|audio\/ogg|
+application\/pdf|application\/msword|
+application\/vnd.openxmlformats-officedocument.wordprocessingml.document/;
+
 
 const fileFilter = (req, file, cb) => {
   const extname = allowedExt.test(path.extname(file.originalname).toLowerCase());
